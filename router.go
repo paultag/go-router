@@ -9,7 +9,14 @@ type Router struct {
 	ARPTable   ARPTable
 }
 
-func (r Router) Lookup(dest net.IP) {
+//
+func (r Router) Lookup(dest net.IP) (*Route, *ARP) {
+	route := r.RouteTable.Lookup(dest)
+	if route == nil {
+		return nil, nil
+	}
+	arp := r.ARPTable.Lookup(route.Gateway)
+	return route, arp
 }
 
 func NewRouter(routeTable RouteTable, arpTable ARPTable) Router {

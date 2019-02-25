@@ -31,6 +31,27 @@ func (r Route) String() string {
 	)
 }
 
+func (r Route) maskInt() uint32 {
+	if len(r.Mask) == 0 {
+		return 0
+	}
+	return binary.LittleEndian.Uint32(r.Mask)
+}
+
+//
+func (r Route) Compare(other Route) int {
+	rmi := r.maskInt()
+	omi := other.maskInt()
+
+	switch {
+	case rmi > omi:
+		return 1
+	case rmi < omi:
+		return -1
+	}
+	return 0
+}
+
 func (r Route) IPNet() *net.IPNet {
 	return &net.IPNet{IP: r.Destination, Mask: r.Mask}
 }
@@ -88,13 +109,16 @@ func NewRouteFromProc(line []string) (*Route, error) {
 type RouteTable []Route
 
 func (rt RouteTable) Lookup(q net.IP) *Route {
-	for _, entry := range rt {
+	var route Route = rt[0]
+
+	for _, entry := range rt[1:] {
 		net := entry.IPNet()
-		if net.Contains(q) {
-			return &entry
+		if net.Contains(q) && route.Compare(entry) < 0 {
+			route = entry
 		}
 	}
-	return nil
+
+	return &route
 }
 
 func NewRouteTable(r io.Reader) (RouteTable, error) {

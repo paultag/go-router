@@ -25,7 +25,15 @@ func main() {
 	for _, ip := range ips {
 		ipAddr := net.ParseIP(ip)
 
-		route := r.RouteTable.Lookup(ipAddr)
-		fmt.Printf("%s\n", route.String())
+		route, arp := r.Lookup(ipAddr)
+		if route == nil {
+			fmt.Printf("no routes found\n")
+		}
+
+		if arp == nil {
+			fmt.Printf("%s\n", route.String())
+		} else {
+			fmt.Printf("%s (%s)\n", route.String(), arp.MAC.String())
+		}
 	}
 }
