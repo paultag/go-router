@@ -1,8 +1,15 @@
 package router
 
+import (
+	"net"
+)
+
 type Router struct {
 	RouteTable RouteTable
 	ARPTable   ARPTable
+}
+
+func (r Router) Lookup(dest net.IP) {
 }
 
 func NewRouter(routeTable RouteTable, arpTable ARPTable) Router {

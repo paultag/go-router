@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"os"
 
 	"pault.ag/go/router"
 )
@@ -11,19 +13,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	for _, route := range r.RouteTable {
-		arpString := "unknown mac"
-		arp := r.ARPTable.Lookup(route.Gateway)
-		if arp != nil {
-			arpString = arp.MAC.String()
-		}
 
-		fmt.Printf(
-			"%s %s via %s (%s)\n",
-			route.Interface,
-			route.IPNet().String(),
-			route.Gateway,
-			arpString,
-		)
+	ips := os.Args[1:]
+
+	if len(ips) == 0 {
+		for _, route := range r.RouteTable {
+			fmt.Printf("%s\n", route.String())
+		}
+	}
+
+	for _, ip := range ips {
+		ipAddr := net.ParseIP(ip)
+
+		route := r.RouteTable.Lookup(ipAddr)
+		fmt.Printf("%s\n", route.String())
 	}
 }

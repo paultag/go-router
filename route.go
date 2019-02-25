@@ -22,6 +22,15 @@ type Route struct {
 	Mask net.IPMask
 }
 
+func (r Route) String() string {
+	return fmt.Sprintf(
+		"%s via %s dev %s",
+		r.IPNet().String(),
+		r.Gateway,
+		r.Interface,
+	)
+}
+
 func (r Route) IPNet() *net.IPNet {
 	return &net.IPNet{IP: r.Destination, Mask: r.Mask}
 }
@@ -80,7 +89,8 @@ type RouteTable []Route
 
 func (rt RouteTable) Lookup(q net.IP) *Route {
 	for _, entry := range rt {
-		if entry.Destination.Equal(q) {
+		net := entry.IPNet()
+		if net.Contains(q) {
 			return &entry
 		}
 	}
